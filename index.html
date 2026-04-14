@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LawnQuote — Free Instant Lawn Estimate</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#f5f7f4;color:#1a1f18;min-height:100vh}
+.app{max-width:560px;margin:0 auto;padding:2.5rem 1.25rem 4rem}
+
+/* Header */
+.header{text-align:center;margin-bottom:2.5rem}
+.logo{width:48px;height:48px;background:#3B6D11;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem}
+.logo svg{stroke:white}
+h1{font-size:26px;font-weight:600;color:#1a1f18;line-height:1.2;margin-bottom:.5rem}
+.hero-sub{font-size:15px;color:#6b7a64;line-height:1.5}
+
+/* Card */
+.card{background:white;border:1px solid #d8e0d2;border-radius:16px;overflow:hidden;margin-bottom:1rem}
+.card-pad{padding:1.5rem}
+.section-label{font-size:11px;font-weight:600;color:#6b7a64;text-transform:uppercase;letter-spacing:.08em;margin-bottom:1rem}
+
+/* Fields */
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:.875rem}
+.field:last-child{margin-bottom:0}
+.field label{font-size:13px;font-weight:500;color:#3d4a38}
+.field input{padding:11px 13px;border:1.5px solid #d8e0d2;border-radius:10px;font-size:14px;background:white;color:#1a1f18;font-family:'DM Sans',sans-serif;transition:border-color 0.15s,box-shadow 0.15s}
+.field input:focus{outline:none;border-color:#3B6D11;box-shadow:0 0 0 3px rgba(59,109,17,.1)}
+.field input::placeholder{color:#a8b5a1}
+
+/* Buttons */
+.btn-primary{width:100%;padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:#3B6D11;color:white;transition:background 0.15s;letter-spacing:-.01em}
+.btn-primary:hover{background:#2d5409}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-secondary{padding:10px 18px;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;border:1.5px solid #d8e0d2;background:white;color:#3d4a38;transition:all 0.15s}
+.btn-secondary:hover{background:#f5f7f4}
+
+/* Steps */
+.page{display:none}.page.active{display:block}
+
+/* Satellite + analysis */
+.sat-wrap{border-radius:12px;overflow:hidden;background:#1a2a14;position:relative;margin-bottom:1rem}
+.sat-img{width:100%;display:block}
+.overlay-canvas{position:absolute;inset:0;width:100%;height:100%}
+.fetching-state{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:220px;gap:12px;color:#a8b5a1;font-size:14px}
+.spinner{width:30px;height:30px;border:2.5px solid #d8e0d2;border-top-color:#3B6D11;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Range reveal */
+.range-box{background:#EAF3DE;border:1.5px solid #C0DD97;border-radius:14px;padding:1.5rem;text-align:center;margin-bottom:1rem}
+.range-label{font-size:13px;color:#3B6D11;font-weight:500;margin-bottom:.5rem}
+.range-num{font-size:48px;font-weight:600;color:#27500A;line-height:1;letter-spacing:-.03em;margin-bottom:.375rem}
+.range-sub{font-size:13px;color:#639922;line-height:1.5}
+.range-disclaimer{font-size:12px;color:#6b7a64;margin-top:.75rem;line-height:1.5;padding:0 .5rem}
+
+/* Curiosity gap CTA */
+.cta-box{background:white;border:1.5px solid #d8e0d2;border-radius:14px;padding:1.25rem;margin-bottom:1rem}
+.cta-title{font-size:15px;font-weight:600;color:#1a1f18;margin-bottom:.375rem}
+.cta-sub{font-size:13px;color:#6b7a64;line-height:1.5;margin-bottom:1rem}
+
+/* Trust badges */
+.trust-row{display:flex;justify-content:center;gap:1.5rem;margin-top:1.25rem}
+.trust-item{display:flex;align-items:center;gap:5px;font-size:12px;color:#6b7a64}
+.trust-dot{width:6px;height:6px;border-radius:50%;background:#3B6D11;flex-shrink:0}
+
+/* Exact quote reveal */
+.exact-box{background:#EAF3DE;border:1.5px solid #C0DD97;border-radius:14px;padding:1.5rem;text-align:center;margin-bottom:1rem}
+.exact-label{font-size:13px;color:#3B6D11;font-weight:500;margin-bottom:.5rem}
+.exact-num{font-size:52px;font-weight:600;color:#27500A;line-height:1;letter-spacing:-.03em;margin-bottom:.5rem}
+.exact-sub{font-size:13px;color:#639922;line-height:1.5}
+
+/* Next steps card */
+.next-card{background:white;border:1.5px solid #d8e0d2;border-radius:14px;padding:1.25rem;margin-bottom:1rem}
+.next-title{font-size:14px;font-weight:600;color:#1a1f18;margin-bottom:.875rem}
+.next-item{display:flex;align-items:flex-start;gap:10px;padding:.625rem 0;border-bottom:1px solid #f0f3ee}
+.next-item:last-child{border-bottom:none;padding-bottom:0}
+.next-icon{width:28px;height:28px;border-radius:8px;background:#EAF3DE;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.next-icon svg{stroke:#3B6D11}
+.next-text{font-size:13px;color:#3d4a38;line-height:1.5}
+.next-text strong{font-weight:600;color:#1a1f18;display:block;margin-bottom:1px}
+
+/* Sqft display */
+.sqft-pill{display:inline-flex;align-items:center;gap:6px;background:#EAF3DE;border:1px solid #C0DD97;border-radius:20px;padding:5px 12px;font-size:13px;font-weight:500;color:#27500A;margin-bottom:1rem}
+
+/* Error */
+.error-box{background:#fdf2f2;border:1px solid #f5c6c6;border-radius:8px;padding:10px 14px;font-size:13px;color:#a32d2d;margin-top:.75rem}
+
+/* Confetti */
+.success-icon{width:56px;height:56px;border-radius:50%;background:#EAF3DE;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem}
+.success-icon svg{stroke:#3B6D11}
+.success-title{font-size:20px;font-weight:600;color:#1a1f18;text-align:center;margin-bottom:.5rem}
+.success-sub{font-size:14px;color:#6b7a64;text-align:center;line-height:1.6;margin-bottom:1.5rem}
+
+.divider{height:1px;background:#f0f3ee;margin:1rem 0}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo" style="background:none;width:120px;height:120px;">
+      <img src="/BirdsEye.jpeg" style="width:100%;height:100%;object-fit:contain;border-radius:12px;"/>
+    </div>
+    <h1>Get a free lawn<br>mowing estimate</h1>
+    <p class="hero-sub">AI measures your lawn from satellite. Takes 30 seconds.</p>
+  </div>
+
+  <!-- STEP 1: Address entry -->
+  <div class="page active" id="page1">
+    <div class="card"><div class="card-pad">
+      <div class="section-label">Your property</div>
+      <div class="field">
+        <label>Service address</label>
+        <input type="text" id="addr" placeholder="1234 Maple St, Chicago, IL" autocomplete="street-address"/>
+      </div>
+      <div id="errorBox1" class="error-box" style="display:none"></div>
+      <div style="margin-top:1.25rem">
+        <button class="btn-primary" id="measureBtn" onclick="startMeasure()">Measure my lawn free →</button>
+      </div>
+    </div></div>
+    <div class="trust-row">
+      <div class="trust-item"><div class="trust-dot"></div>No account needed</div>
+      <div class="trust-item"><div class="trust-dot"></div>Free estimate</div>
+      <div class="trust-item"><div class="trust-dot"></div>30 seconds</div>
+    </div>
+  </div>
+
+  <!-- STEP 2: Satellite loading + analysis -->
+  <div class="page" id="page2">
+    <div class="card">
+      <div class="sat-wrap" id="satWrap">
+        <div class="fetching-state" id="fetchingState">
+          <div class="spinner"></div>
+          <span id="fetchingMsg">Fetching satellite image...</span>
+        </div>
+        <img class="sat-img" id="satImg" style="display:none"/>
+        <canvas class="overlay-canvas" id="overlayCanvas" style="display:none"></canvas>
+      </div>
+      <div style="padding:1rem 1.25rem;border-top:1px solid #f0f3ee;font-size:13px;color:#6b7a64" id="analysisTxt" style="display:none">
+        AI is measuring your lawn area...
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3: Price range + lead capture -->
+  <div class="page" id="page3">
+    <div class="sqft-pill" id="sqftPill">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3B6D11" stroke-width="2.5" stroke-linecap="round"><path d="M3 3h18v18H3z"/></svg>
+      <span id="sqftDisplay">—</span> sq ft detected
+    </div>
+
+    <div class="range-box">
+      <div class="range-label">Estimated mowing cost</div>
+      <div class="range-num" id="rangeDisplay">$— – $—</div>
+      <div class="range-sub">Based on your lawn size in your area</div>
+      <div class="range-disclaimer">This is a ballpark range. Final price depends on gate access, terrain, and grass conditions — which only a quick visit can confirm.</div>
+    </div>
+
+    <div class="cta-box">
+      <div class="cta-title">Want your exact price?</div>
+      <div class="cta-sub">Enter your info and we'll calculate a precise quote for your specific yard — usually within the range above.</div>
+      <div class="field">
+        <label>Your name</label>
+        <input type="text" id="leadName" placeholder="Jane Smith"/>
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="leadEmail" placeholder="jane@email.com"/>
+      </div>
+      <div class="field" style="margin-bottom:1rem">
+        <label>Phone number</label>
+        <input type="tel" id="leadPhone" placeholder="(312) 555-0100"/>
+      </div>
+      <div id="errorBox3" class="error-box" style="display:none"></div>
+      <button class="btn-primary" id="quoteBtn" onclick="submitLead()">Get my exact quote →</button>
+      <div style="font-size:12px;color:#a8b5a1;text-align:center;margin-top:.75rem">No spam. We'll only contact you about this quote.</div>
+    </div>
+  </div>
+
+  <!-- STEP 4: Exact quote reveal + confirmation -->
+  <div class="page" id="page4">
+    <div class="success-icon">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <div class="success-title">Here's your exact quote</div>
+    <div class="success-sub" id="successSub">Based on your <span id="sqftFinal">—</span> sq ft lawn, here's what John's Lawn Care will charge.</div>
+
+    <div class="exact-box">
+      <div class="exact-label">Your exact mowing price</div>
+      <div class="exact-num" id="exactPrice">$—</div>
+      <div class="exact-sub" id="exactSub">Per visit · Subject to on-site confirmation</div>
+    </div>
+
+    <div class="next-card">
+      <div class="next-title">What happens next</div>
+      <div class="next-item">
+        <div class="next-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 014.07 9.8a19.79 19.79 0 01-3.07-8.67A2 2 0 012.18 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.15a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 15z"/></svg></div>
+        <div class="next-text"><strong>We'll call you shortly</strong>A landscaper will confirm availability and answer any questions.</div>
+      </div>
+      <div class="next-item">
+        <div class="next-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+        <div class="next-text"><strong>Pick a day that works</strong>We'll book your first mow at a time that's convenient for you.</div>
+      </div>
+      <div class="next-item">
+        <div class="next-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12M12 12C12 7 7 2 2 2c0 5 5 10 10 10M12 12c0-5 5-10 10-10-0 5-5 10-10 10"/></svg></div>
+        <div class="next-text"><strong>Sit back and enjoy</strong>Your lawn gets mowed. The final price is confirmed on-site.</div>
+      </div>
+    </div>
+
+    <button class="btn-secondary" onclick="startOver()" style="width:100%;text-align:center">Get another estimate</button>
+  </div>
+
+</div>
+<script>
+let detectedSqft = 0;
+
+function goTo(n) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page'+n).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function showError(boxId, msg) {
+  const b = document.getElementById(boxId);
+  b.textContent = msg;
+  b.style.display = 'block';
+}
+
+function hideError(boxId) {
+  document.getElementById(boxId).style.display = 'none';
+}
+
+function calcRange(sqft) {
+  let low, high;
+  if (sqft <= 3500)      { low = 35; high = 55; }
+  else if (sqft <= 6000) { low = 55; high = 80; }
+  else if (sqft <= 10000){ low = 80; high = 115; }
+  else                   { low = 115; high = 160; }
+  return { low, high, exact: Math.round((low + high) / 2) };
+}
+
+async function startMeasure() {
+  const addr = document.getElementById('addr').value.trim();
+  if (!addr) { showError('errorBox1', 'Please enter your service address.'); return; }
+  hideError('errorBox1');
+  document.getElementById('measureBtn').disabled = true;
+  goTo(2);
+  document.getElementById('fetchingMsg').textContent = 'Fetching satellite image...';
+
+  try {
+    const r = await fetch('/map-image', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({address: addr})
+    });
+    const data = await r.json();
+    if (data.error) throw new Error(data.error);
+
+    const img = document.getElementById('satImg');
+    img.src = 'data:image/png;base64,' + data.image;
+    img.style.display = 'block';
+    document.getElementById('fetchingState').style.display = 'none';
+    document.getElementById('overlayCanvas').style.display = 'block';
+    document.getElementById('analysisTxt').textContent = 'AI is measuring your lawn area...';
+    img.onload = () => {
+      drawOverlay();
+      analyzeImg(data.image, 'image/png', addr);
+    };
+  } catch(err) {
+    document.getElementById('fetchingMsg').textContent = 'Could not load satellite image. Please check your address.';
+    document.getElementById('measureBtn').disabled = false;
+  }
+}
+
+async function analyzeImg(base64, mime, addr) {
+  const prompt = `You are analyzing a satellite/aerial image for a lawn mowing estimation tool.\nAddress: ${addr}\nReturn ONLY a JSON object:\n{"sqft":<mowable lawn sq ft as number>,"confidence":<0-100>,"category":<"Small"|"Medium"|"Large"|"XL">,"description":<1 sentence>}\nSmall<3500,Medium 3500-6000,Large 6000-10000,XL>10000. Return ONLY JSON.`;
+  try {
+    const res = await fetch('/analyze', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({base64, mime, prompt})
+    });
+    const d = await res.json();
+    detectedSqft = d.sqft;
+    const range = calcRange(d.sqft);
+    document.getElementById('sqftDisplay').textContent = Number(d.sqft).toLocaleString();
+    document.getElementById('sqftFinal').textContent = Number(d.sqft).toLocaleString();
+    document.getElementById('rangeDisplay').textContent = '$' + range.low + ' – $' + range.high;
+    document.getElementById('exactPrice').textContent = '$' + range.exact;
+    goTo(3);
+  } catch(err) {
+    document.getElementById('fetchingMsg').textContent = 'Analysis failed. Please try again.';
+    document.getElementById('measureBtn').disabled = false;
+    goTo(1);
+  }
+}
+
+function drawOverlay() {
+  const canvas = document.getElementById('overlayCanvas');
+  const img = document.getElementById('satImg');
+  canvas.width = img.offsetWidth * 2;
+  canvas.height = img.offsetHeight * 2;
+  canvas.style.width = '100%';
+  canvas.style.height = '100%';
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height, m = w * 0.1;
+  const pts = [[m,m],[w-m*0.6,m*1.2],[w-m*0.8,h-m],[m*0.9,h-m*0.7]];
+  ctx.beginPath();
+  ctx.moveTo(pts[0][0], pts[0][1]);
+  pts.slice(1).forEach(p => ctx.lineTo(p[0], p[1]));
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(59,109,17,0.25)';
+  ctx.fill();
+  ctx.strokeStyle = '#3B6D11';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+  pts.forEach(p => {
+    ctx.beginPath();
+    ctx.arc(p[0], p[1], 6, 0, Math.PI*2);
+    ctx.fillStyle = '#3B6D11';
+    ctx.fill();
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+  });
+}
+
+async function submitLead() {
+  const name = document.getElementById('leadName').value.trim();
+  const email = document.getElementById('leadEmail').value.trim();
+  const phone = document.getElementById('leadPhone').value.trim();
+  const addr = document.getElementById('addr').value.trim();
+
+  if (!name) { showError('errorBox3', 'Please enter your name.'); return; }
+  if (!email && !phone) { showError('errorBox3', 'Please enter your email or phone number.'); return; }
+  hideError('errorBox3');
+
+  const btn = document.getElementById('quoteBtn');
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+
+  try {
+    await fetch('/lead', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ name, email, phone, address: addr, sqft: detectedSqft })
+    });
+  } catch(e) {
+    // Non-blocking — still show the quote
+  }
+
+  goTo(4);
+}
+
+function startOver() {
+  detectedSqft = 0;
+  document.getElementById('addr').value = '';
+  document.getElementById('leadName').value = '';
+  document.getElementById('leadEmail').value = '';
+  document.getElementById('leadPhone').value = '';
+  document.getElementById('satImg').style.display = 'none';
+  document.getElementById('fetchingState').style.display = 'flex';
+  document.getElementById('overlayCanvas').style.display = 'none';
+  document.getElementById('measureBtn').disabled = false;
+  document.getElementById('quoteBtn').disabled = false;
+  document.getElementById('quoteBtn').textContent = 'Get my exact quote →';
+  goTo(1);
+}
+</script>
+</body>
+</html>

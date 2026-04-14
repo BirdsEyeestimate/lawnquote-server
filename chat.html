@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Get Your Exact Quote</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#f5f7f4;color:#1a1f18;min-height:100vh;display:flex;flex-direction:column}
+.app{max-width:540px;margin:0 auto;width:100%;padding:1.5rem 1.25rem 2rem;flex:1;display:flex;flex-direction:column}
+
+/* Header */
+.chat-header{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;padding-bottom:1.25rem;border-bottom:1px solid #d8e0d2}
+.chat-avatar{width:40px;height:40px;border-radius:12px;background:#EAF3DE;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.chat-avatar img{width:36px;height:36px;border-radius:10px;object-fit:contain}
+.chat-name{font-size:14px;font-weight:600;color:#1a1f18}
+.chat-status{font-size:12px;color:#3B6D11;display:flex;align-items:center;gap:4px}
+.status-dot{width:6px;height:6px;border-radius:50%;background:#3B6D11}
+
+/* Messages */
+.messages{flex:1;display:flex;flex-direction:column;gap:12px;margin-bottom:1rem;min-height:300px}
+.msg{display:flex;flex-direction:column;max-width:85%}
+.msg.ai{align-self:flex-start}
+.msg.user{align-self:flex-end}
+.bubble{padding:11px 14px;border-radius:14px;font-size:14px;line-height:1.55}
+.msg.ai .bubble{background:white;border:1px solid #d8e0d2;border-radius:4px 14px 14px 14px;color:#1a1f18}
+.msg.user .bubble{background:#3B6D11;color:white;border-radius:14px 14px 4px 14px}
+.msg-time{font-size:11px;color:#a8b5a1;margin-top:3px;padding:0 4px}
+.msg.user .msg-time{text-align:right}
+
+/* Typing indicator */
+.typing{display:flex;align-items:center;gap:4px;padding:12px 14px;background:white;border:1px solid #d8e0d2;border-radius:4px 14px 14px 14px;width:fit-content}
+.typing span{width:7px;height:7px;border-radius:50%;background:#d8e0d2;animation:bounce .9s infinite}
+.typing span:nth-child(2){animation-delay:.15s}
+.typing span:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+
+/* Quick replies */
+.quick-replies{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:.75rem}
+.qr{padding:8px 14px;border-radius:20px;font-size:13px;font-weight:500;cursor:pointer;border:1.5px solid #3B6D11;background:white;color:#3B6D11;transition:all .15s}
+.qr:hover{background:#EAF3DE}
+
+/* Input */
+.input-area{display:flex;gap:8px;align-items:flex-end}
+.chat-input{flex:1;padding:11px 13px;border:1.5px solid #d8e0d2;border-radius:12px;font-size:14px;background:white;color:#1a1f18;font-family:'DM Sans',sans-serif;resize:none;max-height:120px;line-height:1.5;transition:border-color .15s}
+.chat-input:focus{outline:none;border-color:#3B6D11;box-shadow:0 0 0 3px rgba(59,109,17,.1)}
+.send-btn{width:42px;height:42px;border-radius:12px;background:#3B6D11;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s}
+.send-btn:hover{background:#27500A}
+.send-btn:disabled{opacity:.4;cursor:not-allowed}
+.send-btn svg{stroke:white}
+
+/* Photo upload */
+.upload-area{border:1.5px dashed #d8e0d2;border-radius:12px;padding:1.25rem;text-align:center;cursor:pointer;transition:all .15s;background:white;margin-bottom:.75rem}
+.upload-area:hover{border-color:#3B6D11;background:#EAF3DE}
+.upload-area input{display:none}
+.upload-label{font-size:13px;color:#6b7a64}
+.upload-label strong{color:#3B6D11;display:block;margin-bottom:2px}
+.photo-preview{width:100%;border-radius:8px;margin-top:.75rem;display:none}
+
+/* Summary card */
+.summary-card{background:white;border:1px solid #d8e0d2;border-radius:14px;padding:1.25rem;margin-bottom:1rem}
+.summary-title{font-size:13px;font-weight:600;color:#6b7a64;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.875rem}
+.summary-row{display:flex;justify-content:space-between;align-items:flex-start;padding:6px 0;border-bottom:1px solid #f0f3ee;font-size:13px}
+.summary-row:last-child{border-bottom:none}
+.summary-key{color:#6b7a64}
+.summary-val{font-weight:500;color:#1a1f18;text-align:right;max-width:60%}
+
+/* Price reveal */
+.price-card{background:#EAF3DE;border:1.5px solid #C0DD97;border-radius:14px;padding:1.5rem;text-align:center;margin-bottom:1rem}
+.price-label{font-size:13px;color:#3B6D11;font-weight:500;margin-bottom:.5rem}
+.price-num{font-size:52px;font-weight:600;color:#27500A;line-height:1;letter-spacing:-.03em;margin-bottom:.5rem}
+.price-sub{font-size:12px;color:#639922;line-height:1.5}
+
+/* Confirm button */
+.confirm-btn{width:100%;padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:#3B6D11;color:white;transition:background .15s;margin-bottom:.75rem}
+.confirm-btn:hover{background:#27500A}
+.disclaimer{font-size:12px;color:#a8b5a1;text-align:center;line-height:1.5}
+
+/* Spinner */
+.spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="chat-header">
+    <div class="chat-avatar"><img src="/BirdsEye.jpeg" alt="Logo"/></div>
+    <div>
+      <div class="chat-name" id="bizNameHeader">Virtual Assistant</div>
+      <div class="chat-status"><div class="status-dot"></div>Online now</div>
+    </div>
+  </div>
+
+  <div class="messages" id="messages"></div>
+  <div class="quick-replies" id="quickReplies"></div>
+
+  <div class="upload-area" id="uploadArea" style="display:none" onclick="document.getElementById('photoInput').click()">
+    <input type="file" id="photoInput" accept="image/*" onchange="handlePhoto(this)"/>
+    <div class="upload-label"><strong>Optional: add a photo</strong>Snap your gate or yard to help us give a more accurate quote</div>
+    <img id="photoPreview" class="photo-preview"/>
+  </div>
+
+  <div class="input-area" id="inputArea">
+    <textarea class="chat-input" id="chatInput" placeholder="Type your answer..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+    <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+// --- State ---
+const params = new URLSearchParams(window.location.search);
+let leadData = {};
+let settings = {};
+let answers = {};
+let step = 0;
+let photoBase64 = null;
+let finalPrice = 0;
+
+const STEPS = ['gate','grass','terrain','debris','areas','photo','summary'];
+
+// --- Init ---
+async function init() {
+  // Load settings
+  try {
+    const r = await fetch('/settings');
+    settings = await r.json();
+    if (settings.bizName) document.getElementById('bizNameHeader').textContent = settings.bizName + ' — Assistant';
+  } catch(e) {}
+
+  // Load lead data from URL params
+  leadData = {
+    name: params.get('name') || 'there',
+    address: params.get('address') || 'your property',
+    sqft: parseInt(params.get('sqft')) || 0,
+    email: params.get('email') || '',
+    phone: params.get('phone') || ''
+  };
+
+  // Start conversation
+  await delay(400);
+  addAIMessage(`Hi ${leadData.name.split(' ')[0]}! 👋 I'm the virtual assistant for ${settings.bizName || 'your lawn care provider'}.`);
+  await delay(1200);
+  addAIMessage(`I can see you have a lawn at **${leadData.address}**${leadData.sqft ? ` — about **${Number(leadData.sqft).toLocaleString()} sq ft**` : ''}. I just need to ask a few quick questions to lock in your exact price.`);
+  await delay(1000);
+  nextStep();
+}
+
+// --- Step engine ---
+async function nextStep() {
+  await delay(600);
+  showTyping();
+  await delay(900);
+  hideTyping();
+
+  const s = STEPS[step];
+
+  if (s === 'gate') {
+    addAIMessage('First — do you have a fenced backyard?');
+    showQuickReplies(['Yes, fenced', 'No fence / open yard']);
+
+  } else if (s === 'gate2') {
+    addAIMessage(`Got it. Roughly how wide is your gate opening — is it a standard gate (around 36 inches), a wider gate (48–52+ inches), or a smaller/narrow gate (under 36 inches)?`);
+    showQuickReplies(['Narrow (under 36")', 'Standard (36–48")', 'Wide (48"+)']);
+
+  } else if (s === 'grass') {
+    addAIMessage('How tall is your grass right now?');
+    showQuickReplies(['Normal height', 'Getting long', 'Overgrown / hasn\'t been mowed in a while']);
+
+  } else if (s === 'terrain') {
+    addAIMessage('Is your yard mostly flat, or does it have hills or slopes?');
+    showQuickReplies(['Mostly flat', 'Some slopes', 'Very hilly']);
+
+  } else if (s === 'debris') {
+    addAIMessage('Any large items or obstacles in the yard we should know about? Things like trampolines, dog runs, play sets, or lots of garden beds?');
+    showQuickReplies(['No, clear yard', 'A few things', 'Yes, quite a few obstacles']);
+
+  } else if (s === 'areas') {
+    addAIMessage('Which areas need mowing?');
+    showQuickReplies(['Front yard only', 'Front + backyard', 'Front, back + side areas']);
+
+  } else if (s === 'photo') {
+    addAIMessage('One last thing — want to add an optional photo of your gate or yard? It helps us give the most accurate quote. Totally optional though!');
+    showQuickReplies(['Skip photo', 'Add a photo']);
+
+  } else if (s === 'summary') {
+    showSummaryAndPrice();
+  }
+}
+
+// --- Handle answers ---
+function handleAnswer(answer) {
+  const s = STEPS[step] === 'gate2' ? 'gate2' : STEPS[step];
+  addUserMessage(answer);
+  clearQuickReplies();
+  hideUpload();
+
+  if (s === 'gate') {
+    answers.fenced = answer.toLowerCase().includes('yes') || answer.toLowerCase().includes('fence') && !answer.toLowerCase().includes('no');
+    if (answers.fenced) {
+      STEPS.splice(step + 1, 0, 'gate2');
+    }
+    step++;
+    nextStep();
+
+  } else if (s === 'gate2') {
+    answers.gateWidth = answer.includes('36') || answer.toLowerCase().includes('standard') ? 'standard' :
+                        answer.toLowerCase().includes('wide') || answer.includes('48') ? 'wide' : 'narrow';
+    STEPS.splice(step, 1); // remove gate2
+    nextStep();
+
+  } else if (s === 'grass') {
+    answers.grass = answer.toLowerCase().includes('normal') ? 'normal' :
+                    answer.toLowerCase().includes('long') ? 'long' : 'overgrown';
+    step++; nextStep();
+
+  } else if (s === 'terrain') {
+    answers.terrain = answer.toLowerCase().includes('flat') ? 'flat' :
+                      answer.toLowerCase().includes('some') ? 'some' : 'hilly';
+    step++; nextStep();
+
+  } else if (s === 'debris') {
+    answers.debris = answer.toLowerCase().includes('no') || answer.toLowerCase().includes('clear') ? 'none' :
+                     answer.toLowerCase().includes('few') ? 'some' : 'many';
+    step++; nextStep();
+
+  } else if (s === 'areas') {
+    answers.areas = answer.toLowerCase().includes('front only') ? 'front' :
+                    answer.toLowerCase().includes('back') ? 'both' : 'multiple';
+    step++; nextStep();
+
+  } else if (s === 'photo') {
+    if (answer.toLowerCase().includes('add')) {
+      showUpload();
+    } else {
+      step++; nextStep();
+    }
+  }
+}
+
+// --- Price calculation ---
+function calcPrice() {
+  const sqft = leadData.sqft || 5000;
+  const p = settings.pricing || {};
+
+  let base = sqft <= 3500 ? (parseFloat(p.small) || 45) :
+             sqft <= 6000 ? (parseFloat(p.medium) || 65) :
+             sqft <= 10000 ? (parseFloat(p.large) || 90) : (parseFloat(p.xl) || 130);
+
+  // Areas multiplier
+  if (answers.areas === 'multiple') base = Math.round(base * 1.3);
+
+  const access = settings.access || {};
+
+  // Gate surcharge
+  if (answers.fenced && answers.gateWidth === 'narrow') {
+    base += parseFloat(access.narrowGateSurcharge) || 20;
+  }
+  // Open yard discount
+  if (!answers.fenced && access.openDiscount?.on) {
+    base -= parseFloat(access.openDiscount.amount) || 0;
+  }
+  // Overgrown
+  if (answers.grass === 'overgrown' && access.overgrown?.on) {
+    base += parseFloat(access.overgrown.price) || 25;
+  }
+  // Hilly
+  if (answers.terrain === 'hilly' && access.hilly?.on) {
+    base += parseFloat(access.hilly.price) || 15;
+  }
+  // Debris
+  if (answers.debris === 'some') base += 10;
+  if (answers.debris === 'many') base += 20;
+
+  // Min price
+  const min = parseFloat(settings.minPrice) || 0;
+  return Math.max(min, Math.round(base));
+}
+
+// --- Summary ---
+async function showSummaryAndPrice() {
+  finalPrice = calcPrice();
+
+  const summaryItems = [
+    { key: 'Address', val: leadData.address },
+    { key: 'Lawn size', val: leadData.sqft ? Number(leadData.sqft).toLocaleString() + ' sq ft' : '—' },
+    { key: 'Fenced yard', val: answers.fenced ? 'Yes' : 'No' },
+    answers.fenced ? { key: 'Gate width', val: answers.gateWidth === 'narrow' ? 'Narrow (under 36")' : answers.gateWidth === 'wide' ? 'Wide (48"+)' : 'Standard (36–48")' } : null,
+    { key: 'Grass height', val: answers.grass === 'normal' ? 'Normal' : answers.grass === 'long' ? 'Getting long' : 'Overgrown' },
+    { key: 'Terrain', val: answers.terrain === 'flat' ? 'Mostly flat' : answers.terrain === 'some' ? 'Some slopes' : 'Very hilly' },
+    { key: 'Obstacles', val: answers.debris === 'none' ? 'Clear yard' : answers.debris === 'some' ? 'A few items' : 'Several obstacles' },
+    { key: 'Mowing areas', val: answers.areas === 'front' ? 'Front only' : answers.areas === 'both' ? 'Front + back' : 'Front, back + sides' },
+  ].filter(Boolean);
+
+  addAIMessage('Perfect — here\'s a summary of what you told me:');
+  await delay(500);
+
+  // Build summary card
+  const card = document.createElement('div');
+  card.className = 'summary-card';
+  card.innerHTML = `<div class="summary-title">Your yard details</div>` +
+    summaryItems.map(i => `<div class="summary-row"><span class="summary-key">${i.key}</span><span class="summary-val">${i.val}</span></div>`).join('');
+  document.getElementById('messages').appendChild(card);
+  scrollBottom();
+
+  await delay(800);
+  showTyping();
+  await delay(1200);
+  hideTyping();
+
+  // Price reveal
+  const priceDiv = document.createElement('div');
+  priceDiv.className = 'price-card';
+  priceDiv.innerHTML = `
+    <div class="price-label">Your exact mowing price</div>
+    <div class="price-num">$${finalPrice}</div>
+    <div class="price-sub">Per visit · ${settings.bizName || 'Your landscaper'} · Subject to on-site confirmation</div>
+  `;
+  document.getElementById('messages').appendChild(priceDiv);
+  scrollBottom();
+
+  await delay(600);
+  addAIMessage(`Based on everything you told me, ${settings.bizName || 'your landscaper'} can take care of this for **$${finalPrice} per visit**. Want me to get you on the schedule?`);
+
+  // Hide input, show confirm
+  document.getElementById('inputArea').style.display = 'none';
+  showQuickReplies(['Yes, book me in!', 'I need to think about it']);
+}
+
+// --- Booking ---
+async function handleBooking(answer) {
+  clearQuickReplies();
+  addUserMessage(answer);
+
+  if (answer.toLowerCase().includes('yes') || answer.toLowerCase().includes('book')) {
+    await delay(600);
+    showTyping();
+    await delay(1000);
+    hideTyping();
+    addAIMessage(`Great! I've sent your details to ${settings.bizName || 'the team'}. Someone will call you at ${leadData.phone || 'the number you provided'} within a few hours to confirm a time that works for you.`);
+    await delay(800);
+
+    const disclaimer = document.createElement('div');
+    disclaimer.className = 'disclaimer';
+    disclaimer.style.marginTop = '1rem';
+    disclaimer.textContent = '✓ Final price confirmed on first visit · No payment required today';
+    document.getElementById('messages').appendChild(disclaimer);
+
+    // Save qualified lead
+    try {
+      await fetch('/lead-qualified', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ ...leadData, answers, finalPrice, photo: photoBase64 })
+      });
+    } catch(e) {}
+
+    scrollBottom();
+  } else {
+    await delay(600);
+    addAIMessage(`No problem! Your quote of $${finalPrice} is saved. If you change your mind, just come back to this page and we\'ll pick up right where we left off. Have a great day! 🌿`);
+    scrollBottom();
+  }
+}
+
+// --- UI helpers ---
+function addAIMessage(text) {
+  const div = document.createElement('div');
+  div.className = 'msg ai';
+  const b = document.createElement('div');
+  b.className = 'bubble';
+  b.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  div.appendChild(b);
+  document.getElementById('messages').appendChild(div);
+  scrollBottom();
+}
+
+function addUserMessage(text) {
+  const div = document.createElement('div');
+  div.className = 'msg user';
+  const b = document.createElement('div');
+  b.className = 'bubble';
+  b.textContent = text;
+  div.appendChild(b);
+  document.getElementById('messages').appendChild(div);
+  scrollBottom();
+}
+
+function showTyping() {
+  const d = document.createElement('div');
+  d.id = 'typing';
+  d.className = 'msg ai';
+  d.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
+  document.getElementById('messages').appendChild(d);
+  scrollBottom();
+}
+
+function hideTyping() {
+  const t = document.getElementById('typing');
+  if (t) t.remove();
+}
+
+function showQuickReplies(options) {
+  const qr = document.getElementById('quickReplies');
+  qr.innerHTML = '';
+  const isFinalStep = STEPS[step] === 'summary';
+  options.forEach(o => {
+    const btn = document.createElement('button');
+    btn.className = 'qr';
+    btn.textContent = o;
+    btn.onclick = () => {
+      if (isFinalStep || step >= STEPS.indexOf('summary')) {
+        handleBooking(o);
+      } else {
+        handleAnswer(o);
+      }
+    };
+    qr.appendChild(btn);
+  });
+}
+
+function clearQuickReplies() {
+  document.getElementById('quickReplies').innerHTML = '';
+}
+
+function showUpload() {
+  document.getElementById('uploadArea').style.display = 'block';
+  scrollBottom();
+}
+
+function hideUpload() {
+  document.getElementById('uploadArea').style.display = 'none';
+}
+
+function handlePhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    photoBase64 = e.target.result.split(',')[1];
+    document.getElementById('photoPreview').src = e.target.result;
+    document.getElementById('photoPreview').style.display = 'block';
+    addUserMessage('📷 Photo added');
+    hideUpload();
+    step++;
+    nextStep();
+  };
+  reader.readAsDataURL(file);
+}
+
+function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  autoResize(input);
+  const isFinalStep = step >= STEPS.indexOf('summary');
+  if (isFinalStep) {
+    handleBooking(text);
+  } else {
+    handleAnswer(text);
+  }
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function scrollBottom() {
+  setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 50);
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+init();
+</script>
+</body>
+</html>

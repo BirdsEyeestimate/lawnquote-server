@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin Panel</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f4f6f0;display:flex;height:100vh;overflow:hidden}
+.sidebar{width:220px;background:#1e3a0f;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.sb-logo{display:flex;align-items:center;gap:10px;padding:1.25rem;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:1rem}
+.sb-logo img{width:32px;height:32px;border-radius:8px;object-fit:contain;background:white}
+.sb-logo span{font-size:14px;font-weight:600;color:white}
+.sb-label{font-size:10px;font-weight:600;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.1em;padding:0 1.25rem .5rem}
+.sb-item{display:flex;align-items:center;gap:9px;padding:.625rem 1.25rem;font-size:13px;color:rgba(255,255,255,.65);cursor:pointer;transition:all .15s;border-left:2px solid transparent}
+.sb-item:hover{color:white;background:rgba(255,255,255,.05)}
+.sb-item.active{color:white;background:rgba(255,255,255,.08);border-left-color:#97C459}
+.sb-bottom{margin-top:auto;padding:1rem 1.25rem;border-top:1px solid rgba(255,255,255,.1)}
+.save-all{width:100%;padding:10px;background:#3B6D11;color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}
+.save-all:hover{background:#27500A}
+.main{flex:1;overflow-y:auto;padding:2rem}
+.page-header{margin-bottom:1.75rem}
+.page-title{font-size:22px;font-weight:600;color:#1a1f18;margin-bottom:4px}
+.page-sub{font-size:13px;color:#6b7a64}
+.section{display:none}.section.active{display:block}
+.card{background:white;border:1px solid #d8e0d2;border-radius:14px;margin-bottom:1.25rem;padding:1.5rem}
+.card h3{font-size:14px;font-weight:600;color:#1a1f18;margin-bottom:1rem}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-group.full{grid-column:1/-1}
+label{font-size:13px;font-weight:500;color:#374030}
+input[type=text],input[type=email],input[type=tel],input[type=number],textarea,select{padding:9px 12px;border:1.5px solid #d8e0d2;border-radius:9px;font-size:14px;color:#1a1f18;outline:none;transition:border .15s;width:100%;background:white}
+input:focus,textarea:focus,select:focus{border-color:#3B6D11}
+.input-prefix{display:flex;align-items:center;border:1.5px solid #d8e0d2;border-radius:9px;overflow:hidden;background:white}
+.input-prefix span{padding:9px 10px;background:#f4f6f0;color:#6b7a64;font-size:14px;border-right:1.5px solid #d8e0d2}
+.input-prefix input{border:none;border-radius:0}
+.input-prefix input:focus{border:none;outline:none}
+.hint{font-size:11px;color:#8a9a84}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge.in{background:#e8f5e0;color:#2d6a0a}
+.badge.out{background:#fde8e8;color:#b91c1c}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:.75rem 0;border-bottom:1px solid #f0f4ec}
+.toggle-row:last-child{border-bottom:none}
+.toggle-label{font-size:13px;color:#374030}
+.toggle{position:relative;width:44px;height:24px}
+.toggle input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;background:#d8e0d2;border-radius:24px;cursor:pointer;transition:.3s}
+.slider:before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:white;border-radius:50%;transition:.3s}
+input:checked+.slider{background:#3B6D11}
+input:checked+.slider:before{transform:translateX(20px)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:.625rem .75rem;font-size:11px;font-weight:600;color:#6b7a64;text-transform:uppercase;letter-spacing:.05em;border-bottom:2px solid #e8f0e4}
+td{padding:.75rem;border-bottom:1px solid #f0f4ec;color:#374030}
+tr:last-child td{border-bottom:none}
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:#1e3a0f;color:white;padding:.75rem 1.25rem;border-radius:10px;font-size:14px;font-weight:500;display:none;z-index:999}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="sb-logo">
+    <img src="https://api.dicebear.com/7.x/shapes/svg?seed=lawn" alt="">
+    <span>Admin Panel</span>
+  </div>
+  <div class="sb-label">Settings</div>
+  <div class="sb-item active" onclick="showSection('business',this)">
+    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Business Info
+  </div>
+  <div class="sb-item" onclick="showSection('pricing',this)">
+    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+    Pricing Rules
+  </div>
+  <div class="sb-item" onclick="showSection('gate',this)">
+    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+    Gate & Access
+  </div>
+  <div class="sb-item" onclick="showSection('availability',this)">
+    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Availability
+  </div>
+  <div class="sb-item" onclick="showSection('area',this)">
+    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
+    Service Area
+  </div>
+  <div class="sb-item" onclick="showSection('ai',this)">
+    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    AI Messages
+  </div>
+  <div class="sb-item" onclick="showSection('leads',this)">
+    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+    Lead Log
+  </div>
+  <div class="sb-item" onclick="showSection('policies',this)">
+    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+    Service Policies
+  </div>
+  <div class="sb-bottom">
+    <button class="save-all" onclick="saveAll()">Save all settings</button>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- BUSINESS -->
+<div id="business" class="section active">
+  <div class="page-header"><div class="page-title">Business info</div><div class="page-sub">Basic details shown to customers and used in notifications</div></div>
+  <div class="card">
+    <div class="form-grid">
+      <div class="form-group"><label>Business name</label><input name="bizName" type="text" placeholder="John's Lawn Care"></div>
+      <div class="form-group"><label>Owner name</label><input name="ownerName" type="text" placeholder="John Smith"></div>
+      <div class="form-group"><label>Owner phone</label><input name="ownerPhone" type="tel" placeholder="(312) 555-0100"></div>
+      <div class="form-group"><label>Notification email</label><input name="notifyEmail" type="email" placeholder="john@johnslawn.com"><span class="hint">Leads will be sent here</span></div>
+      <div class="form-group"><label>Min job price</label><div class="input-prefix"><span>$</span><input name="minPrice" type="number" placeholder="45"></div><span class="hint">No quote will go below this</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- PRICING -->
+<div id="pricing" class="section">
+  <div class="page-header"><div class="page-title">Pricing Rules</div><div class="page-sub">Set your per sqft rates and add-on prices</div></div>
+  <div class="card">
+    <div class="form-grid">
+      <div class="form-group"><label>Base price per sqft ($)</label><input name="pricePerSqft" type="number" step="0.001" placeholder="0.008"></div>
+      <div class="form-group"><label>Tall grass surcharge (%)</label><input name="tallGrassPct" type="number" placeholder="25"></div>
+      <div class="form-group"><label>Edging add-on ($)</label><input name="edgingPrice" type="number" placeholder="15"></div>
+      <div class="form-group"><label>Blowing add-on ($)</label><input name="blowingPrice" type="number" placeholder="10"></div>
+      <div class="form-group"><label>Bagging add-on ($)</label><input name="baggingPrice" type="number" placeholder="20"></div>
+    </div>
+  </div>
+</div>
+
+<!-- GATE -->
+<div id="gate" class="section">
+  <div class="page-header"><div class="page-title">Gate & Access</div><div class="page-sub">Questions asked when a customer has a gate</div></div>
+  <div class="card">
+    <div class="form-group"><label>Gate question prompt</label><textarea name="gatePrompt" rows="3" placeholder="Do you have a gate or fence that requires a code or key?"></textarea></div>
+  </div>
+</div>
+
+<!-- AVAILABILITY -->
+<div id="availability" class="section">
+  <div class="page-header"><div class="page-title">Availability</div><div class="page-sub">Set your working days and hours</div></div>
+  <div class="card">
+    <div class="form-grid">
+      <div class="form-group"><label>Working days</label><input name="workDays" type="text" placeholder="Mon–Sat"></div>
+      <div class="form-group"><label>Working hours</label><input name="workHours" type="text" placeholder="7am–6pm"></div>
+      <div class="form-group"><label>Next available slot</label><input name="nextSlot" type="text" placeholder="e.g. Tomorrow, Thursday"></div>
+    </div>
+  </div>
+</div>
+
+<!-- AREA -->
+<div id="area" class="section">
+  <div class="page-header"><div class="page-title">Service Area</div><div class="page-sub">Define where you serve</div></div>
+  <div class="card">
+    <div class="form-grid">
+      <div class="form-group full"><label>Cities / ZIP codes served (comma separated)</label><textarea name="serviceArea" rows="3" placeholder="Chicago, Evanston, Oak Park, 60601, 60602"></textarea></div>
+      <div class="form-group full"><label>Out-of-area message</label><textarea name="outOfAreaMsg" rows="2" placeholder="Sorry, we don't currently serve that area."></textarea></div>
+    </div>
+  </div>
+</div>
+
+<!-- AI -->
+<div id="ai" class="section">
+  <div class="page-header"><div class="page-title">AI Messages</div><div class="page-sub">Customize what the AI says to customers</div></div>
+  <div class="card">
+    <div class="form-group"><label>Welcome message</label><textarea name="welcomeMsg" rows="3" placeholder="Hi! I'm here to get you an exact quote..."></textarea></div>
+    <br>
+    <div class="form-group"><label>Closing message (after quote given)</label><textarea name="closingMsg" rows="3" placeholder="Great news! Based on your info, here's your quote..."></textarea></div>
+  </div>
+</div>
+
+<!-- LEADS -->
+<div id="leads" class="section">
+  <div class="page-header"><div class="page-title">Lead Log</div><div class="page-sub">All quote requests submitted</div></div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <table>
+      <thead><tr><th>Name</th><th>Address</th><th>Sq ft</th><th>Phone</th><th>Email</th><th>Status</th><th>Date</th></tr></thead>
+      <tbody id="leadTbody"><tr><td colspan="7" style="text-align:center;color:#8a9a84;padding:2rem">No leads yet</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- POLICIES -->
+<div id="policies" class="section">
+  <div class="page-header"><div class="page-title">Service Policies</div><div class="page-sub">First mow pricing, badges, and cancellation policy</div></div>
+  <div class="card">
+    <div class="form-grid">
+      <div class="form-group"><label>First Mow Premium (%)</label><input name="firstMowPremium" type="number" min="0" max="100" placeholder="e.g. 25"><span class="hint">Extra % charged for first mow cleanup</span></div>
+      <div class="form-group"><label>Seasonal Price Adjustment (%)</label><input name="seasonalAdj" type="number" min="-50" max="50" placeholder="e.g. 10 for summer premium"></div>
+      <div class="form-group full"><label style="display:flex;gap:10px;align-items:center"><input type="checkbox" name="licensedInsured"> Show Licensed &amp; Insured badge on customer page</label></div>
+      <div class="form-group full"><label>Cancellation / Weather Policy</label><textarea name="cancelPolicy" rows="3" placeholder="e.g. We reschedule within 24hrs for weather cancellations"></textarea></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end main -->
+
+<div class="toast" id="toast">Settings saved!</div>
+
+<script>
+function showSection(id, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(el) el.classList.add('active');
+}
+
+async function loadSettings() {
+  try {
+    const res = await fetch('/settings');
+    const s = await res.json();
+    document.querySelectorAll('[name]').forEach(el => {
+      if(el.type === 'checkbox') { el.checked = !!s[el.name]; }
+      else if(s[el.name] !== undefined) { el.value = s[el.name]; }
+    });
+  } catch(e){}
+}
+
+async function saveAll() {
+  const data = {};
+  document.querySelectorAll('[name]').forEach(el => {
+    if(el.type === 'checkbox') data[el.name] = el.checked;
+    else data[el.name] = el.value;
+  });
+  await fetch('/settings', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
+  const t = document.getElementById('toast');
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 2500);
+}
+
+async function loadLeads() {
+  try {
+    const res = await fetch('/leads');
+    const leads = await res.json();
+    if (!leads || !leads.length) return;
+    document.getElementById('leadTbody').innerHTML = leads.map(l => `
+      <tr>
+        <td>${l.name}</td><td>${l.address}</td><td>${Number(l.sqft).toLocaleString()}</td>
+        <td>${l.phone||'—'}</td><td>${l.email||'—'}</td>
+        <td><span class="badge ${l.inArea===false?'out':'in'}">${l.inArea===false?'Out of area':'In area'}</span></td>
+        <td>${new Date(l.date).toLocaleDateString()}</td>
+      </tr>`).join('');
+  } catch(e){}
+}
+
+loadSettings();
+loadLeads();
+</script>
+</body>
+</html>
