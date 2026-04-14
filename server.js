@@ -132,4 +132,4 @@ app.get('/leads', (req, res) => {
   catch(err) { res.json([]); }
 });
 
-app.listen(3001, () => console.log('LawnQuote server running on http://localhost:3001'));
+app.listen(process.env.PORT || 3001, '0.0.0.0', () => console.log('LawnQuote server running on http://localhost:3001'));
