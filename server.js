@@ -133,7 +133,5 @@ app.get('/leads', (req, res) => {
 });
 
 const port = process.env.PORT || 3001;
-const server = require('http').createServer(app);
-server.listen(port, '0.0.0.0', () => console.log('LawnQuote server running 
-on port ' + port));
-
+const server = require("http").createServer(app);
+server.listen(port, "0.0.0.0", function() { console.log("LawnQuote server running on port " + port); });
