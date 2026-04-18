@@ -1,4 +1,4 @@
-require('dotenv').config();
+_____________require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
@@ -132,4 +132,8 @@ app.get('/leads', (req, res) => {
   catch(err) { res.json([]); }
 });
 
-app.listen(process.env.PORT || 3001, '0.0.0.0', () => console.log('LawnQuote server running on http://localhost:3001'));
+const port = process.env.PORT || 3001;
+const server = require('http').createServer(app);
+server.listen(port, '0.0.0.0', () => console.log('LawnQuote server running 
+on port ' + port));
+
